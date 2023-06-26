@@ -69,7 +69,7 @@ def cli():
     pass
 
 
-@cli.command('list', short_help='列出项目下所有脚本提供的指令。')
+@cli.command('list', short_help='列出项目下所有脚本提供的指令')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def scanner():
     """
@@ -121,7 +121,7 @@ def scanner():
         console.warning('未找到任何命令。')
 
 
-@cli.command('shebang', short_help='管理项目下所有脚本的shebang。')
+@cli.command('shebang', short_help='管理项目下所有脚本的shebang')
 @click.option('-s', '--set', 'change', is_flag=True, help='修改所有脚本的shebang')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def manager(change):
@@ -160,7 +160,7 @@ def manager(change):
     console.print('完毕\n')
 
 
-@cli.command('status', short_help='列出Python环境信息。')
+@cli.command('status', short_help='列出Python环境信息')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def explorer():
     console = HydroConsole()

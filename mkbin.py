@@ -30,6 +30,9 @@ def generator(
     if length < 1:
         console.warning('LENGTH 必须是一个正整数。')
         exit(-1)
+    if b not in (None, 64, 85, 32):
+        console.warning('选项 -b 只有以下几种参数：-b64、-b85、-b32')
+        exit(-1)
 
     dataset = (randbytes(length) for _ in range(qty))
     if integer:

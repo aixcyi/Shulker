@@ -31,6 +31,9 @@ def generator(
     if bits < 1:
         console.warning('BITS 必须是一个正整数')
         exit(-1)
+    if b not in (None, 64, 85, 32):
+        console.warning('选项 -b 只有以下几种参数：-b64、-b85、-b32')
+        exit(-1)
 
     byteqty = ceil(bits / 8)
     dataset = (getrandbits(bits) for _ in range(qty))
