@@ -4,7 +4,7 @@ from base64 import b64encode, b64decode
 
 import click
 
-from core.features import HydroConsole
+from core.console import HydroConsole
 
 
 @click.group(__name__, short_help='Base64编解码')

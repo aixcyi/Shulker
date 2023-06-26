@@ -12,7 +12,7 @@ from rich.table import Table
 from rich.text import Text
 
 from core import version
-from core.features import HydroConsole
+from core.console import HydroConsole
 
 ego: Path = Path(__file__).absolute()  # 当前文件
 root: Path = ego.parent  # 项目根目录

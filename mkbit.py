@@ -6,7 +6,7 @@ from random import getrandbits
 
 import click
 
-from core.features import HydroConsole
+from core.console import HydroConsole
 
 
 @click.command(__name__, short_help='随机生成 BITS 比特二进制数据', no_args_is_help=True)

@@ -5,7 +5,7 @@ from random import randbytes
 
 import click
 
-from core.features import HydroConsole
+from core.console import HydroConsole
 
 
 @click.command(__name__, short_help='随机生成 LENGTH 字节二进制数据', no_args_is_help=True)

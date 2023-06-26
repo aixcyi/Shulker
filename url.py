@@ -8,7 +8,7 @@ from rich.style import Style
 from rich.table import Table, Column
 from rich.text import Text
 
-from core.features import HydroConsole
+from core.console import HydroConsole
 
 PORTS = {
     'http': 80, 'https': 443, 'ftp': 21, 'ssh': 22,
