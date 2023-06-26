@@ -38,7 +38,7 @@ def splitter(encoding, only_path, only_query, skip_fragment):
     """
     console = HydroConsole()
     try:
-        url = console.ask('输入一条URL：')
+        url = console.ask('输入一条URL：', style='cyan')
     except KeyboardInterrupt:
         exit(0)
     info = urlsplit(url, allow_fragments=not skip_fragment)
@@ -91,13 +91,13 @@ def splitter(encoding, only_path, only_query, skip_fragment):
     console.print(t_query)
 
 
-@operator.command('encode', no_args_is_help=False, short_help='进行URL编码')
+@operator.command('encode', no_args_is_help=False, short_help='URL编码')
 @click.option('-e', '--encoding', default='UTF-8', help='字符串编码，默认是 UTF-8。')
 @click.option('-p', '--plus', is_flag=True, help='将空格转义为 + 号，而不是直接编码为 %20 。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 def encoder(encoding, plus):
     """
-    对字符串进行URL编码。
+    对字符串进行URL编码，将非ASCII字符、保留字符等转换为 "%3A" 这种格式的字符串。
     """
     console = HydroConsole()
     try:
@@ -111,13 +111,13 @@ def encoder(encoding, plus):
     print('\n', result, sep='')
 
 
-@operator.command('decode', no_args_is_help=False, short_help='进行URL解码')
+@operator.command('decode', no_args_is_help=False, short_help='URL解码')
 @click.option('-e', '--encoding', default='UTF-8', help='解析字符串时使用的编码，默认是 UTF-8。')
 @click.option('-p', '--plus', is_flag=True, help='将 + 号转义为空格。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 def decoder(encoding, plus):
     """
-    对字符串进行URL解码。
+    对字符串进行URL解码，将 "%3A" 这种格式的字符串还原成原本的字符。
     """
     console = HydroConsole()
     try:
@@ -130,6 +130,9 @@ def decoder(encoding, plus):
     result = translate(string, encoding=encoding)
     print('\n', result, sep='')
 
+
+operator.add_command(encoder, 'enc')
+operator.add_command(decoder, 'dec')
 
 if __name__ == '__main__':
     operator()
