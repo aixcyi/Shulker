@@ -11,6 +11,7 @@ from rich import box
 from rich.table import Table
 from rich.text import Text
 
+from core import version
 from core.features import HydroConsole
 
 ego: Path = Path(__file__).absolute()  # 当前文件
@@ -59,6 +60,7 @@ def set_shebang(src: Path, interpreter: str) -> str:
 
 
 @click.group(__name__, short_help='指令管理')
+@click.version_option(version, '-v', '--version', prog_name='shulker', help='显示版本信息。')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def cli():
     """
