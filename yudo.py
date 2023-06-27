@@ -31,10 +31,10 @@ from core.configurators import Command
 from core.console import HydroConsole
 
 try:
-    import configs
+    from configs import COMMANDS
 except ImportError:
     HydroConsole(stderr=True).warning(
-        '使用此命令前需要配置 ./configs/__init__.py'
+        '使用此命令前需要在 ./configs/__init__.py 中配置 COMMANDS'
     )
     exit(-1)
 
@@ -42,10 +42,7 @@ except ImportError:
 interface = click.Command(__name__, short_help='运行预设的指令（程序／项目／脚本）')
 
 # 配置里的所有指令
-commands: dict[str, type[Command]] = {
-    v.name: v for v in configs.__dict__.values()
-    if type(v) is type and issubclass(v, Command)
-}
+commands: dict[str, type[Command]] = {v.name: v for v in COMMANDS}
 
 
 def indexes1(iterable):
@@ -59,7 +56,7 @@ def show_help():
 
 def list_commands():
     table = Table('指令', '描述／备注', box=box.SIMPLE_HEAD)
-    for cmd in commands.values():
+    for cmd in COMMANDS:
         table.add_row(cmd.name, cmd.note)
 
     console = HydroConsole()
