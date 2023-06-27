@@ -131,8 +131,8 @@ def manager(change):
     table = Table('文件名', 'Shebang', box=box.SIMPLE_HEAD)
     for src in get_sources():
         table.add_row(
-            get_shebang(src) or Text('(未设置)', style='magenta'),
             Text(src.name, 'cyan' if src == ego else ''),
+            get_shebang(src) or Text('(未设置)', style='magenta'),
         )
 
     console = HydroConsole()
