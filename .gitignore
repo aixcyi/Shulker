@@ -1,3 +1,18 @@
-**/__pycache__
-/.idea
-/.vscode
+# Environment
+/venv*/
+
+# Cache
+**/__pycache__/
+
+# IDE
+/.idea/
+/.vscode/
+/*.code-workspace
+
+# Customize Configurations
+/conf*
+/cfg*
+/*.conf*
+/*.cfg
+/*.env*
+/*.ini
