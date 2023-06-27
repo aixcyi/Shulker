@@ -1,3 +1,6 @@
+from typing import NamedTuple
+
+
 class Command:
     name: str
     main: str
@@ -13,3 +16,9 @@ class Command:
 
         self.scripts = [*self.before, script]
         self.script = delimiter.join([*self.before, script])
+
+
+class FileShortcut(NamedTuple):
+    name: str
+    path: str
+    editor: str
