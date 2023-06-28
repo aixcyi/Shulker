@@ -1,7 +1,7 @@
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
 import click
-from rich.table import Table
+from rich.panel import Panel
 from rich.text import Text
 
 from core.console import HydroConsole
@@ -74,6 +74,11 @@ def decoder(encoding):
 def mapper(encoding):
     """
     映射字符串或HEX。将字节映射到表中，或对字符串进行去重。
+
+    输出结果的
+    b 指的是比特数目 bits，
+    B 指的是字节数目 bytes，
+    C 指的是字符个数 characters。
     """
     console = HydroConsole()
     try:
@@ -88,27 +93,24 @@ def mapper(encoding):
         console.warning('HEX格式错误。')
     else:
         bs = set(binary)
-        line1 = f'{len(binary)} bytes ({len(binary) * 8} bits)'
-        line2 = f'{len(string)} chars, <{encoding or "HEX"}>'
-        line3 = Text('\n').join(
-            Text().join(
+        status = Text().join([
+            Text(str(len(binary) * 8), 'cyan'), Text('b, '),
+            Text(str(len(binary)), 'cyan'), Text('B, '),
+            Text(str(len(string)), 'cyan'), Text('C, '),
+            Text(f'<{encoding or "HEX"}>'),
+        ])
+        body = Text('\n').join(
+            Text(',', 'bright_black').join(
                 Text(
-                    f'{(b := j * 16 + i):02x},',
+                    f'{(b := j * 16 + i):02x}',
                     'white' if b in bs else 'bright_black'
                 )
-                for i in range(1, 16)
+                for i in range(16)
             )
             for j in range(16)
         )
-        # for i in range(256):
-        #     line3.append(f'{i:02x}{sep}', 'white' if i in bs else 'bright_black')
-        #     if i % 16 == 15:
-        #         line3.append('\n')
-        table = Table(box=None)
-        table.add_row('字节数', Text(line1, style='bright_black'))
-        table.add_row('字符数', Text(line2, style='bright_black'))
-        table.add_row('映射表', line3)
-        console.print(table)
+        panel = Panel(body, expand=False, subtitle=status)
+        console.print(panel)
 
 
 operator.add_command(encoder, 'enc')
