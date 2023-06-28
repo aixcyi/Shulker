@@ -64,7 +64,7 @@ def set_shebang(src: Path, interpreter: str) -> str:
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def cli():
     """
-    来自末地之城的潜影盒，藏着不为人知的魔法指令。
+    来自深界七层的潜影盒，有终末嗟叹之诗刻于其上，藏着银狼那奇技淫巧般的指令
     """
     pass
 
