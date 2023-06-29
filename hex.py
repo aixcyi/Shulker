@@ -81,36 +81,47 @@ def mapper(encoding):
     C 指的是字符个数 characters。
     """
     console = HydroConsole()
-    try:
-        string = console.ask('输入字符串：' if encoding else '输入纯HEX：', style='cyan')
-    except KeyboardInterrupt:
-        exit(0)
-    try:
-        binary = string.encode(encoding) if encoding else bytes.fromhex(string)
-    except LookupError:
-        console.warning('无法识别的编码', encoding)
-    except ValueError:
-        console.warning('HEX格式错误。')
+    if encoding:
+        try:
+            string = console.ask('输入字符串：', style='cyan')
+            binary = string.encode(encoding)
+        except KeyboardInterrupt:
+            exit(0)
+        except LookupError:
+            console.warning('无法识别的编码。', encoding)
+            exit(-1)
+        except UnicodeEncodeError:
+            console.warning(f'{encoding} 解码失败。')
+            exit(-1)
     else:
-        bs = set(binary)
-        status = Text().join([
-            Text(str(len(binary) * 8), 'cyan'), Text('b, '),
-            Text(str(len(binary)), 'cyan'), Text('B, '),
-            Text(str(len(string)), 'cyan'), Text('C, '),
-            Text(f'<{encoding or "HEX"}>'),
-        ])
-        body = Text('\n').join(
-            Text(',', 'bright_black').join(
-                Text(
-                    f'{(b := j * 16 + i):02x}',
-                    'white' if b in bs else 'bright_black'
-                )
-                for i in range(16)
+        try:
+            string = console.ask('输入HEX：', style='cyan')
+            binary = bytes.fromhex(string)
+        except KeyboardInterrupt:
+            exit(0)
+        except ValueError:
+            console.warning('HEX格式错误。')
+            exit(-1)
+
+    bs = set(binary)
+    status = Text().join([
+        Text(str(len(binary) * 8), 'cyan'), Text('b, '),
+        Text(str(len(binary)), 'cyan'), Text('B, '),
+        Text(str(len(string)), 'cyan'), Text('C, '),
+        Text(f'<{encoding or "HEX"}>'),
+    ])
+    body = Text('\n').join(
+        Text(',', 'bright_black').join(
+            Text(
+                f'{(b := j * 16 + i):02x}',
+                'white' if b in bs else 'bright_black'
             )
-            for j in range(16)
+            for i in range(16)
         )
-        panel = Panel(body, expand=False, subtitle=status)
-        console.print(panel)
+        for j in range(16)
+    )
+    panel = Panel(body, expand=False, subtitle=status)
+    console.print(panel)
 
 
 operator.add_command(encoder, 'enc')
