@@ -1,14 +1,14 @@
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
 import importlib.util
-import platform
 import sys
 from pathlib import Path
-from typing import Iterable, Any, Generator
+from typing import Iterable, Generator
 
 import click
 from rich import box
-from rich.table import Table
+from rich.panel import Panel
+from rich.table import Table, Column
 from rich.text import Text
 
 from core import version
@@ -160,30 +160,31 @@ def manager(change):
     console.print('完毕\n')
 
 
-@cli.command('status', short_help='列出Python环境信息')
+@cli.command('status', short_help='列出环境信息')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def explorer():
     console = HydroConsole()
-    console.print('\n项目目录：')
-    console.print(' ', str(root))
-    console.print('\n当前解释器：')
-    console.print(' ', sys.executable)
-    if platform.system() != 'Windows':
-        return
 
-    import winreg
+    table = Table(Column(justify='right'), Column(), box=None, show_header=False)
+    table.add_row('项目目录', str(root))
+    table.add_row('解释器', str(sys.executable))
+    table.add_row('解释器版本', sys.version)
 
-    def read_reg(key: int, subkey: str, name='') -> Any:
-        with winreg.OpenKeyEx(key, subkey) as h:
-            _value, _type = winreg.QueryValueEx(h, name)
-            return _value
+    try:
+        from configs import STATUSES
+    except ImportError:
+        # noinspection PyPep8Naming
+        STATUSES = []
 
-    console.print('\n注册表相关：')
-    console.print(r'  [HKEY_CLASSES_ROOT\py_auto_file\shell\open\command]')
-    console.print('  @=' + read_reg(winreg.HKEY_CLASSES_ROOT, r'py_auto_file\shell\open\command'))
-    console.print()
-    console.print(r'  [HKEY_CLASSES_ROOT\.py]')
-    console.print(r'  @=' + read_reg(winreg.HKEY_CLASSES_ROOT, r'.py'))
+    for status in STATUSES:
+        if not isinstance(status, tuple | list):
+            continue
+        if not status:
+            table.add_row(end_section=True)
+        else:
+            table.add_row(*status)
+
+    console.print(Panel(table, expand=False, border_style='dim'))
 
 
 if __name__ == '__main__':

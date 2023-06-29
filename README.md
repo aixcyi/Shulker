@@ -134,11 +134,7 @@ shulker shebang -s
 
 文件记录。被指令 `edit` 用于打开文件。
 
-导入：`from configs import FILES`  
-源码：`./configs/__init__.py`  
-类型：`list[FileShortcut]`，见core.configurators.[FileShortcut](https://github.com/aixcyi/Shulker/blob/main/core/configurators.py#L21)
-
-烹饪指南：
+##### 烹饪指南
 
 ```python
 from typing import NamedTuple
@@ -156,15 +152,20 @@ FILES = [
 ]
 ```
 
+##### 食用指南
+
+```python
+from configs import FILES
+from core.configurators import FileShortcut
+
+FILES: list[FileShortcut]
+```
+
 ### COMMANDS
 
 命令配置。被指令 `yudo` 用于运行程序／项目／脚本等。
 
-导入：`from configs import COMMANDS`  
-源码：`./configs/__init__.py`  
-类型：`list[type[Command]]`，见core.configurators.[Command](https://github.com/aixcyi/Shulker/blob/main/core/configurators.py#L4)
-
-烹饪指南：
+##### 烹饪指南
 
 ```python
 from core.configurators import Command
@@ -189,7 +190,14 @@ COMMANDS = [
 ]
 ```
 
-食用指南：
+##### 食用指南
+
+```python
+from configs import COMMANDS
+from core.configurators import Command
+
+COMMANDS: list[type[Command]]
+```
 
 ```shell
 yudo abc.d mkms  # python -X utf8 ./manage.py makemigrations
@@ -199,15 +207,34 @@ yudo abc.d runserver 0.0.0.0:6666  # python -X utf8 ./manage.py runserver 0.0.0.
 yudo abc.d --help  # python -X utf8 ./manage.py --help
 ```
 
+### STATUSES
+
+环境信息。被指令 `shulker status` 用来列出相关环境信息，但其实……你完全可以把它当成一个备忘录。
+
+##### 烹饪指南
+
+```python
+# 不要问我为什么不定义成一个dict，谁也不知道以后会不会有更多列
+STATUSES = [
+    (),  #  空一行
+    ('标准编码', 'https://docs.python.org/zh-cn/3/library/codecs.html#standard-encodings'),
+]
+```
+
+##### 食用指南
+
+```python
+from configs import STATUSES
+from rich.console import ConsoleRenderable, RichCast
+
+STATUSES: list[tuple | tuple[str, None | ConsoleRenderable | RichCast | str]]
+```
+
 ### charsets
 
 自定义字符集。被指令 `mkstr` 按照不同字符集生成随机字符串，使用指令 `char set` 可以浏览这里配置的所有字符集。
 
-导入：`from configs import charsets`  
-源码：`./configs/charsets.py`  
-类型：包／Modules
-
-烹饪指南：
+##### 烹饪指南
 
 ```python
 # 所有符号都会被当作字符集，所以如果实在需要导入其它符号，记得完事之后用 del 删除
@@ -230,8 +257,17 @@ base62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 # print(''.join(sorted(symbol)))
 # print(''.join(sorted(symbol_normal + symbol_shift)))
 assert sorted(symbol) == sorted(symbol_normal + symbol_shift)
-# 空一行方便你选择文本，诶嘿
+# 空一行方便你选择文本。爱护大小熊猫，坚决抵制夺笋
 
+```
+
+##### 食用指南
+
+```python
+from configs import charsets
+import typing
+
+charsets: type(typing)  # 意思就是说 charsets 是一个 Python 包
 ```
 
 ## 定制
