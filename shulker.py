@@ -70,8 +70,9 @@ def cli():
 
 
 @cli.command('list', short_help='列出项目下所有脚本提供的指令')
+@click.option('-a', '--all', 'fully', is_flag=True, help='显示所有指令，包括隐藏的。')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
-def scanner():
+def scanner(fully):
     """
     扫描根目录下不在子目录中的所有python脚本，动态导入后执行以获取所有指令。
 
@@ -108,9 +109,9 @@ def scanner():
 
     # table = Table('指令', '说明', box=box.SIMPLE_HEAD, row_styles=["dim", ""])
     table = Table('指令', '说明', box=box.SIMPLE_HEAD)
-    for cmd in (c for c in commands if not c.hidden):
+    for cmd in commands if fully else (c for c in commands if not c.hidden):
         table.add_row(
-            Text(cmd.name, 'yellow') if cmd.deprecated else cmd.name,
+            Text(cmd.name, 'yellow' if cmd.deprecated else 'magenta' if cmd.hidden else ''),
             cmd.short_help
         )
 
