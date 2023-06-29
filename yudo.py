@@ -55,9 +55,9 @@ def show_help():
 
 
 def list_commands():
-    table = Table('指令', '描述／备注', box=box.SIMPLE_HEAD)
+    table = Table('指令', '描述／备注', '动作', box=box.SIMPLE_HEAD)
     for cmd in COMMANDS:
-        table.add_row(cmd.name, cmd.note)
+        table.add_row(cmd.name, cmd.note, '、'.join(cmd.actions.keys()))
 
     console = HydroConsole()
     console.print(table)

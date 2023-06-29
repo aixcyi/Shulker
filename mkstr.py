@@ -34,7 +34,7 @@ def generator(length: int, names: tuple[str], once: bool, qty: int, **csn: bool)
     """
     随机生成 LENGTH 个字符。
 
-    使用 charset 命令查看所有预设的字符集。
+    使用 char set 命令查看所有预设的字符集。
 
     通常来说，如果要生成按比特数计的字符串，更建议用 mkbin 或 mkbit 命令。
     """
