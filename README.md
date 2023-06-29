@@ -4,6 +4,8 @@
     <i>来自深界七层的潜影盒，有终末嗟叹之诗刻于其上，藏着银狼那奇技淫巧般的指令</i>
 </div>
 
+一套（省略八百字）命令集。
+
 ## 特性
 
 - 使用命令行接口定义与解析框架 [Click](https://click.palletsprojects.com/en/8.1.x/api/) ，面向对象设计命令行接口，妈妈再也不用担心我秃头
@@ -15,55 +17,37 @@
 
 ## 安装
 
-> 需要安装 Python 3.11 版本，没有以上。如果有，那一定是README没有更新。
+需要安装 Python 3.11 版本。
 
-首先，克隆仓库：
-
-```shell
-git clone git@github.com:aixcyi/Shulker.git "shulker"
-```
-
-或者使用 HTTPS 克隆：
+直接克隆仓库：
 
 ```shell
 git clone https://github.com/aixcyi/Shulker.git "shulker"
 ```
 
-然后创建虚拟环境：
+### Windows
+
+创建虚拟环境并安装依赖包：
 
 ```shell
 cd ./shulker
 python -m venv ./venv
-```
-
-接着，切换到虚拟环境中：
-
-```shell
-cd ./venv/Scripts
-activate
-```
-
-最后安装依赖：
-
-```shell
-cd ../../
+"./venv/Scripts/activate.bat"
 pip install -r ./requirements.txt
 ```
 
-## 设置
-
-> 主要是让你可以在命令行中直接调用 Python 脚本。
-
-### Windows
-
-离开虚拟环境后，直接运行：
+离开虚拟环境后试着运行一下主命令：
 
 ```shell
+deactivate
 "./shulker.py" --help
 ```
 
-如果没有出现错误，则配置结束。  
-如果出现 `ImportError` 这样的导入错误，需要修改文件关联：
+如果没有出现错误，则安装完毕。
+
+最后，将仓库目录添加到环境变量 `PATH` 中，以便随时随地调用仓库里的命令。
+
+如果出现 `ImportError` 这样的导入错误，那么需要修改文件关联：
 
 （为了防止误操作，最好先看看原来的关联）
 
@@ -84,55 +68,130 @@ reg add HKCR\py_auto_file\shell\open\command /ve /d "\"C:\Windows\py.exe\" \"%1\
 
 如果这两个文件都没有，请重新安装 Python，并勾选 **py.exe** 那个选项。
 
-### Linux
+### Ubuntu
 
-*TODO：没有环境。等待补充。*
+#### 安装 python3
 
-### Mac
+确定本机有没有安装 python3.11 ：
 
-*TODO：没有环境。等待补充。*
+```shell
+which python3.11
+which python3
+```
 
-## 设置 Plus Pro Max
+没有的话，安装之前搜索一下看看有没有 3.11：
 
-墙裂建议！！将仓库目录添加到环境变量 `PATH` 中，以便随时随地调用脚本。
+```shell
+apt search python3 | grep ^python3.11
+```
+
+有就直接安装好了。  
+没有的话可以通过 PPA 来安装 Python（安装之后应该是 `/usr/bin/python3.11`）：
+
+```shell
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.11
+```
+
+然后在当前用户 Home 目录的 `.bashrc` 里设置别名：
+
+- 如果原本就有 `python3` 那么尽量避免覆盖，因为 Ubuntu 很多库都依赖 python
+
+```sh
+alias py3='python3.11'
+```
+
+- 否则可以设置比较常用的别名
+
+```shell
+alias python3='python3.11'
+```
+
+别忘了
+
+```shell
+source ~/.bashrc
+```
+
+#### 安装 pip3
+
+确定本机有没有安装 pip3，有的话看一下版本是不是对应了 Python 3.11
+
+```shell
+which pip3
+pip3 -V
+```
+
+如果没有或者不是，需要另外安装 pip3 并在 `.bashrc` 里设置别名：
+（从这里往后都假设你设置的别名是 <font color="red"><b>python3</b></font> 和 <font color="red"><b>pip3</b></font> ）
+
+```shell
+wget https://bootstrap.pypa.io/pip/get-pip.py
+python3 ./get-pip.py
+```
+
+#### 配置 shulker
+
+去到刚刚克隆的仓库中，直接安装依赖：（因为我在WSL中没有使用虚拟环境）
+
+```shell
+pip3 install -r ./requirements.txt
+```
+
+首先修改所有源文件的 shebang（一般是 `#!/usr/bin/python3.11`，具体看你装到哪里去了）：
+
+```shell
+python3 ./shulker.py shebang --set
+```
+
+然后给所有 Python 源码添加执行权限：
+
+```shell
+chmod +x ./*.py
+```
+
+接着生成没有后缀的符号链接：
+
+```shell
+python3 ./shulker.py link
+```
+
+最后，在 `.bashrc` 里将仓库目录添加到PATH中：
+
+```shell
+PATH=你的仓库目录:$PATH
+```
+
+之后，你就可以在其它任何地方直接调用命令了。
+
+### Linux／Mac
+
+*没有环境。等待补充。*
 
 ## 用法
 
-> 目前的指令都是使用 `-h` 和 `--help` 风格，没有用 `/?` 风格，因为 ~~整体迁移比较麻烦~~ 懒。
+> 目前的命令都是使用 `-h` 和 `--help` 风格，没有用 `/?` 风格，因为 ~~整体迁移比较麻烦~~ 懒。
 
-主命令是下面这个：
-
-```shell
-shulker --help
-```
-
-它可以列出当前目录下所有指令（非递归），包括不在版本管理里的自定义的
+主命令是 `shulker` ，你可以通过它来浏览所有命令，包括弃用的：
 
 ```shell
 shulker list
 ```
 
-如果虚拟环境迁移了，可以先修改 `shulker.py` 的 shebang，然后
-
-列出所有指令的 shebang：
+查看隐藏的命令：
 
 ```shell
-shulker shebang
-```
-
-修改所有已经有 shebang 的源文件的 shebang：
-
-```shell
-shulker shebang -s
+shulker list -a
 ```
 
 ## 配置
 
-> 配置指的是指令读取的预先设置的东西，以一个 Python 包的形式存放在项目根目录下，其名为 "configs" ，鲲之大，一锅装不下。
+> 配置指的是命令读取的预先设置的东西，以一个 Python 包的形式存放在项目根目录下，其名为 "configs" ，鲲之大，一锅装不下。
 
 ### FILES
 
-文件记录。被指令 `edit` 用于打开文件。
+文件记录。被命令 `edit` 用于打开文件。
 
 ##### 烹饪指南
 
@@ -163,7 +222,7 @@ FILES: list[FileShortcut]
 
 ### COMMANDS
 
-命令配置。被指令 `yudo` 用于运行程序／项目／脚本等。
+命令配置。被命令 `yudo` 用于运行程序／项目／脚本等。
 
 ##### 烹饪指南
 
@@ -182,7 +241,7 @@ class CompanyProject(Command):
     actions = {
         'mkms': 'makemigrations',
         'migrate': 'migrate',
-        'run': 'runserver 127.0.0.1:6666',
+        'run': 'runserver 127.0.0.1:7777',
     }
 
 COMMANDS = [
@@ -202,14 +261,14 @@ COMMANDS: list[type[Command]]
 ```shell
 yudo abc.d mkms  # python -X utf8 ./manage.py makemigrations
 yudo abc.d migrate  # python -X utf8 ./manage.py migrate
-yudo abc.d run  # python -X utf8 ./manage.py runserver 127.0.0.1:6666
-yudo abc.d runserver 0.0.0.0:6666  # python -X utf8 ./manage.py runserver 0.0.0.0:6666
+yudo abc.d run  # python -X utf8 ./manage.py runserver 127.0.0.1:7777
+yudo abc.d runserver 0.0.0.0:80  # python -X utf8 ./manage.py runserver 0.0.0.0:80
 yudo abc.d --help  # python -X utf8 ./manage.py --help
 ```
 
 ### STATUSES
 
-环境信息。被指令 `shulker status` 用来列出相关环境信息，但其实……你完全可以把它当成一个备忘录。
+环境信息。被命令 `shulker status` 用来列出相关环境信息，但其实……你完全可以把它当成一个备忘录。
 
 ##### 烹饪指南
 
@@ -232,7 +291,7 @@ STATUSES: list[tuple | tuple[str, None | ConsoleRenderable | RichCast | str]]
 
 ### charsets
 
-自定义字符集。被指令 `mkstr` 按照不同字符集生成随机字符串，使用指令 `char set` 可以浏览这里配置的所有字符集。
+自定义字符集。被命令 `mkstr` 按照不同字符集生成随机字符串，使用命令 `char set` 可以浏览这里配置的所有字符集。
 
 ##### 烹饪指南
 
@@ -282,12 +341,12 @@ charsets: type(typing)  # 意思就是说 charsets 是一个 Python 包
 import sys
 import click
 
-@click.command(__name__, short_help='我的指令')
+@click.command(__name__, short_help='我的命令')
 @click.argument('yourname')
 @click.option('-u', '--upper', is_flag=True, help='输出全大写的句子。')
 def invoker(yourname: str, upper: bool):
     """
-    这是我的第一个指令。
+    这是我的第一个命令。
     """
     message = f'Hello, {yourname}.'
     if upper:
@@ -311,7 +370,7 @@ meow --help
 ```
 Usage: meow.py [OPTIONS] YOURNAME
 
-  这是我的第一个指令。
+  这是我的第一个命令。
 
 Options:
   -u, --upper  输出全大写的句子。
