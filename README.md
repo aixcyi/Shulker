@@ -17,12 +17,18 @@
 
 ## 安装
 
-需要安装 Python 3.11 版本。
+> 需要 Python 3.11 版本。
 
 直接克隆仓库：
 
 ```shell
 git clone https://github.com/aixcyi/Shulker.git "shulker"
+```
+
+或者
+
+```shell
+git clone https://gitee.com/aixcyi/shulker.git "shulker"
 ```
 
 ### Windows
@@ -168,6 +174,49 @@ PATH=你的仓库目录:$PATH
 ### Linux／Mac
 
 *没有环境。等待补充。*
+
+## 更新
+
+直接更新仓库：
+
+```shell
+git fetch
+git pull
+```
+
+如果网络比较差，可以：
+
+```shell
+git remote set-url origin https://gitee.com/aixcyi/shulker.git
+git fetch
+git pull
+```
+
+### Windows
+
+如果解释器也是 `./venv/Scripts/python.exe` 的话那么就没有后续操作。
+
+如果不是，就需要手动编辑一下 `shulker.py` 的 shebang 然后运行：
+
+```shell
+shulker shebang --set
+```
+
+修改所有源文件的 shebang 。
+
+### Linux／Mac
+
+修改所有源文件的 shebang（一般是 `#!/usr/bin/python3.11`，具体看你装到哪里去了）：
+
+```shell
+python3 ./shulker.py shebang --set
+```
+
+然后给所有 Python 源码添加执行权限：
+
+```shell
+chmod +x ./*.py
+```
 
 ## 用法
 
