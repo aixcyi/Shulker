@@ -157,7 +157,46 @@ def manager(change):
                 str(src),
                 Text(result or '成功', style='bright_red' if result else 'green'),
             )
-    console.print('完毕\n')
+    console.print('完毕')
+
+
+@cli.command('link', short_help='为所有指令创建没有.py后缀的符号链接')
+@click.help_option('-h', '--help', help='显示此帮助信息。')
+def linker():
+    console = HydroConsole()
+    sources = (src for src in get_sources() if get_shebang(src))
+
+    with console.status('正在复制...', spinner='bouncingBar'):
+        for src in sources:
+            src: Path
+            tar = src.with_suffix('')
+            try:
+                tar.symlink_to(src)
+            except FileExistsError:
+                console.print(str(tar), Text('已存在', style='yellow'))
+            except WindowsError:
+                console.print(str(tar), Text('无需执行此操作', style='yellow'))
+            else:
+                console.print(str(tar), Text('完毕', style='green'))
+    console.print('完毕')
+
+
+@cli.command('unlink', short_help='删除项目根目录下所有符号链接')
+@click.help_option('-h', '--help', help='显示此帮助信息。')
+def unlinker():
+    console = HydroConsole()
+    symlinks = (lnk for lnk in root.glob('*') if lnk.is_symlink() and lnk.is_file())
+
+    with console.status('正在删除...', spinner='bouncingBar'):
+        for lnk in symlinks:
+            lnk: Path
+            try:
+                lnk.unlink()
+            except FileNotFoundError:
+                console.print(str(lnk), Text('不存在', style='yellow'))
+            else:
+                console.print(str(lnk), Text('完毕', style='green'))
+    console.print('完毕')
 
 
 @cli.command('status', short_help='列出环境信息')
