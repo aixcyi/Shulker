@@ -53,7 +53,6 @@ def set_shebang(src: Path, interpreter: str) -> str:
                 f.truncate()
                 return ''
             else:
-                # TODO
                 return '未有shebang，不作修改'
     except Exception as e:
         return str(e)
@@ -150,13 +149,13 @@ def manager(change):
         console.warning('\n完毕。未作修改。')
         exit(0)
 
+    console.print()
     with console.status('正在修改shebang...', spinner='bouncingBar'):
         for src in get_sources():
-            console.print(src.name, end='  ')
             result = set_shebang(src, shebang)
             console.print(
-                result or '成功',
-                style='bright_magenta' if result else 'green',
+                str(src),
+                Text(result or '成功', style='bright_red' if result else 'green'),
             )
     console.print('完毕\n')
 
