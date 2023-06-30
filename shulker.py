@@ -1,15 +1,22 @@
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
-import importlib.util
 import sys
-from pathlib import Path
-from typing import Iterable, Generator
 
-import click
-from rich import box
-from rich.panel import Panel
-from rich.table import Table, Column
-from rich.text import Text
+try:
+    import importlib.util
+    from pathlib import Path
+    from typing import Iterable, Generator, Any
+
+    import click
+    from rich import box
+    from rich.panel import Panel
+    from rich.style import Style
+    from rich.table import Table, Column
+    from rich.text import Text
+except ImportError as exc_info:
+    raise ImportError(
+        'YOU ARE USING THIS PYTHON:\n' + str(sys.executable)
+    ) from exc_info
 
 from core import version
 from core.console import HydroConsole
@@ -121,63 +128,68 @@ def scanner(fully):
         console.warning('未找到任何命令。')
 
 
-@cli.command('shebang', short_help='管理项目下所有脚本的shebang')
-@click.option('-s', '--set', 'change', is_flag=True, help='修改所有脚本的shebang')
+@cli.command('migrate', short_help='迁移到Linux／MacOS')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
-def manager(change):
+def migrator():
     """
-    列出或修改项目下所有python脚本的shebang。
+    迁移到Linux／MacOS，一次性搞定：自定义shebang，添加执行权限，创建符号链接。
     """
-    table = Table('文件名', 'Shebang', box=box.SIMPLE_HEAD)
+    table = Table('文件', 'Shebang', box=box.SIMPLE_HEAD)
     for src in get_sources():
-        table.add_row(
-            Text(src.name, 'cyan' if src == ego else ''),
-            get_shebang(src) or Text('(未设置)', style='magenta'),
-        )
+        src: Path
+        lnk: Path = src.with_suffix('')
+
+        if lnk.is_symlink() and lnk.readlink() == src:
+            filename = Text(lnk.name, Style(color='cyan', bold=True)) + Text(' -> ', 'white')
+        else:
+            filename = Text()
+        if src.stat().st_mode & 0o0111 > 0:
+            filename += Text(src.name, Style(color='bright_green', bold=True)) + Text('*', 'white')
+        else:
+            filename += Text(src.name)
+
+        shebang = get_shebang(src) or Text('(未设置)', style='magenta')
+
+        table.add_row(filename, shebang)
 
     console = HydroConsole()
     console.print(table)
-    console.print(' ', root / '*.py', '\n')
+    console.print(' ', Text(str(root / '*.py')), '\n')
 
-    if not change:
-        return
     try:
         shebang = console.ask('输入新的shebang，或按 Ctrl-C 键终止：\n#!')
     except KeyboardInterrupt:
         shebang = ''
     if not shebang:
-        console.warning('\n完毕。未作修改。')
+        console.warning('\n终止。未作修改。')
         exit(0)
 
     console.print()
-    with console.status('正在修改shebang...', spinner='bouncingBar'):
-        for src in get_sources():
-            result = set_shebang(src, shebang)
-            console.print(
-                str(src),
-                Text(result or '成功', style='bright_red' if result else 'green'),
-            )
-    console.print('完毕')
+    for src in get_sources():
+        console.print(Text(str(src)), end='  ')
 
+        result = set_shebang(src, shebang)
+        console.print(Text(result or 'shebang已修改', style='bright_red' if result else 'green'), end='  ')
 
-@cli.command('link', short_help='为所有指令创建没有.py后缀的符号链接')
-@click.help_option('-h', '--help', help='显示此帮助信息。')
-def linker():
-    console = HydroConsole()
-    sources = (src for src in get_sources() if get_shebang(src))
+        mode = src.stat().st_mode | 0o111
+        src.chmod(mode)
+        console.print(Text('执行权限已添加', style='green'), end='  ')
 
-    with console.status('正在复制...', spinner='bouncingBar'):
-        for src in sources:
-            src: Path
-            tar = src.with_suffix('')
+        lnk = src.with_suffix('')
+        if lnk.is_symlink() and lnk.readlink() == src:
+            console.print(Text('符号链接已存在', style='green'))
+        else:
+            existed = lnk.exists()
             try:
-                tar.symlink_to(src)
-            except FileExistsError:
-                console.print(str(tar), Text('已存在', style='yellow'))
-            except WindowsError:
-                console.print(str(tar), Text('无需执行此操作', style='yellow'))
+                lnk.symlink_to(src)
+            except OSError:
+                console.print(Text('不创建符号链接', style='green'))
+                continue
+            if existed:
+                console.print(Text('符号链接已覆盖', style='yellow'))
             else:
-                console.print(str(tar), Text('完毕', style='green'))
+                console.print(Text('符号链接已创建', style='green'))
+
     console.print('完毕')
 
 
@@ -197,6 +209,73 @@ def unlinker():
             else:
                 console.print(str(lnk), Text('完毕', style='green'))
     console.print('完毕')
+
+
+@cli.command('fixreg', short_help='修复文件关联并导出注册表原配置')
+@click.help_option('-h', '--help', help='显示此帮助信息。')
+def fixer():
+    r"""
+    将 [HKEY_CLASSES_ROOT\.py] 指向 py_auto_file，同时配置
+    [HKEY_CLASSES_ROOT\py_auto_file\shell\open\command]
+    为 "C:\Windows\py.exe" "%1" %*
+    """
+    import winreg
+
+    console = HydroConsole(no_color=True)
+    monitor = HydroConsole(stderr=True)
+    p1 = Path(r'C:\Windows\py.exe')
+    p2 = p1.home() / r'AppData\Local\Programs\Python\Launcher\py.exe'
+
+    if p1.exists():
+        py_auto_file = f'"{p1!s}" "%1" %*'
+    elif p2.exists():
+        py_auto_file = f'"{p2!s}" "%1" %*'
+    else:
+        monitor.warning(
+            '以下路径都不存在，请尝试重新安装 Python 并勾选 py.exe 选项。',
+            str(p1), str(p2), sep='\n',
+        )
+        exit(-1)
+
+    def read(ancestor: int, path: str, name: str = ''):
+        try:
+            with winreg.OpenKeyEx(ancestor, path) as h:
+                value, type_id = winreg.QueryValueEx(h, name)
+                return value
+        except FileNotFoundError:
+            return ...
+
+    # reg query HKCR\.py /ve
+    # reg query HKCR\py_auto_file\shell\open\command /ve
+    old_dot_py = read(winreg.HKEY_CLASSES_ROOT, '.py')
+    old_py_auto_file = read(winreg.HKEY_CLASSES_ROOT, r'py_auto_file\shell\open\command')
+
+    console.print('Windows Registry Editor Version 5.00')
+    console.print()
+    console.print(r'[HKEY_CLASSES_ROOT\.py]')
+    console.print('@=', '(UNSET)' if old_dot_py is ... else old_dot_py, sep='')
+    console.print()
+    console.print(r'[HKEY_CLASSES_ROOT\py_auto_file\shell\open\command]')
+    console.print('@=', '(UNSET)' if old_py_auto_file is ... else old_py_auto_file, sep='')
+
+    def write(ancestor: int, path: str, name: str, value) -> str:
+        try:
+            with winreg.CreateKeyEx(ancestor, path) as h:
+                winreg.SetValue(h, name, winreg.REG_SZ, value)
+                return ''
+        except OSError as e:
+            return e.args[1] if len(e.args) >= 2 else str(e)
+
+    # reg add HKCR\.py /ve /d "py_auto_file"
+    # reg add HKCR\py_auto_file\shell\open\command /ve /d "\"C:\Windows\py.exe\" \"%1\" %*"
+    err1 = write(winreg.HKEY_CLASSES_ROOT, '.py', '', 'py_auto_file')
+    err2 = write(winreg.HKEY_CLASSES_ROOT, r'py_auto_file\shell\open\command', '', py_auto_file)
+    monitor.print()
+    monitor.print('-' * 32, style='bright_cyan')
+    monitor.print(r'[HKEY_CLASSES_ROOT\.py]',
+                  Text(err1 or '修改成功', 'red' if err1 else 'green'))
+    monitor.print(r'[HKEY_CLASSES_ROOT\py_auto_file\shell\open\command]',
+                  Text(err2 or '修改成功', 'red' if err2 else 'green'))
 
 
 @cli.command('status', short_help='列出环境信息')

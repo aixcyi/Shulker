@@ -17,7 +17,7 @@
 
 ## 安装
 
-> 需要 Python 3.11 版本。
+> 需要 Python 3.11 或以上版本。
 
 直接克隆仓库：
 
@@ -49,95 +49,20 @@ deactivate
 "./shulker.py" --help
 ```
 
-如果没有出现错误，则安装完毕。
+如果出现 `ImportError` 这样的导入错误，那么需要修改注册表的两条文件关联：
+
+```shell
+"./venv/Scripts/activate.bat"
+python ./shulker.py fixreg > restore.reg
+```
+
+- 若提示 py.exe 不存在，请尝试修复或重新安装 Python。
+- 若两条都提示修改成功，则完毕。
+- 若出现其它错误，请双击 `restore.reg` 文件，还原文件关联！！！！！！！！！！
 
 最后，将仓库目录添加到环境变量 `PATH` 中，以便随时随地调用仓库里的命令。
 
-如果出现 `ImportError` 这样的导入错误，那么需要修改文件关联：
-
-（为了防止误操作，最好先看看原来的关联）
-
-```shell
-reg query HKCR\.py /ve
-reg query HKCR\py_auto_file\shell\open\command /ve
-```
-
-（然后再）
-
-```shell
-reg add HKCR\.py /ve /d "py_auto_file"
-reg add HKCR\py_auto_file\shell\open\command /ve /d "\"C:\Windows\py.exe\" \"%1\" %*"
-```
-
-没有 `C:\Windows\py.exe` 的话，那应该是  
-`C:\Users\<你的用户名>\AppData\Local\Programs\Python\Launcher\py.exe`
-
-如果这两个文件都没有，请重新安装 Python，并勾选 **py.exe** 那个选项。
-
-### Ubuntu
-
-#### 安装 python3
-
-确定本机有没有安装 python3.11 ：
-
-```shell
-which python3.11
-which python3
-```
-
-没有的话，安装之前搜索一下看看有没有 3.11：
-
-```shell
-apt search python3 | grep ^python3.11
-```
-
-有就直接安装好了。  
-没有的话可以通过 PPA 来安装 Python（安装之后应该是 `/usr/bin/python3.11`）：
-
-```shell
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.11
-```
-
-然后在当前用户 Home 目录的 `.bashrc` 里设置别名：
-
-- 如果原本就有 `python3` 那么尽量避免覆盖，因为 Ubuntu 很多库都依赖 python
-
-```sh
-alias py3='python3.11'
-```
-
-- 否则可以设置比较常用的别名
-
-```shell
-alias python3='python3.11'
-```
-
-别忘了
-
-```shell
-source ~/.bashrc
-```
-
-#### 安装 pip3
-
-确定本机有没有安装 pip3，有的话看一下版本是不是对应了 Python 3.11
-
-```shell
-which pip3
-pip3 -V
-```
-
-如果没有或者不是，需要另外安装 pip3 并在 `.bashrc` 里设置别名：
-（从这里往后都假设你设置的别名是 <font color="red"><b>python3</b></font> 和 <font color="red"><b>pip3</b></font> ）
-
-```shell
-wget https://bootstrap.pypa.io/pip/get-pip.py
-python3 ./get-pip.py
-```
-
-#### 配置 shulker
+### Linux
 
 去到刚刚克隆的仓库中，直接安装依赖：（因为我在WSL中没有使用虚拟环境）
 
@@ -145,22 +70,16 @@ python3 ./get-pip.py
 pip3 install -r ./requirements.txt
 ```
 
-首先修改所有源文件的 shebang（一般是 `#!/usr/bin/python3.11`，具体看你装到哪里去了）：
+看一下python3装到哪里去了（如果用虚拟环境要看虚拟环境的python3），一般是 `#!/usr/bin/python3.11`
 
 ```shell
-python3 ./shulker.py shebang --set
+which python3
 ```
 
-然后给所有 Python 源码添加执行权限：
+然后修改所有py文件的 shebang、添加执行权限、创建符号链接：
 
 ```shell
-chmod +x ./*.py
-```
-
-接着生成没有后缀的符号链接：
-
-```shell
-python3 ./shulker.py link
+python3 ./shulker.py migrate
 ```
 
 最后，在 `.bashrc` 里将仓库目录添加到PATH中：
@@ -171,9 +90,9 @@ PATH=你的仓库目录:$PATH
 
 之后，你就可以在其它任何地方直接调用命令了。
 
-### Linux／Mac
+### Mac
 
-*没有环境。等待补充。*
+*没有环境。哪位好心的大佬愿意轻抬小手挥挥衣袖帮俺补上*
 
 ## 更新
 
@@ -196,13 +115,11 @@ git pull
 
 如果解释器也是 `./venv/Scripts/python.exe` 的话那么就没有后续操作。
 
-如果不是，就需要手动编辑一下 `shulker.py` 的 shebang 然后运行：
+如果不是，那么需要使用 **你的解释器** 运行迁移来修改所有源文件的 shebang ：
 
 ```shell
-shulker shebang --set
+python ./shulker.py migrate
 ```
-
-修改所有源文件的 shebang 。
 
 ### Linux／Mac
 
@@ -432,3 +349,69 @@ Options:
 - [Rich 最新版 API 英文文档](https://rich.readthedocs.io/en/latest/)
 - [Rich 中文 README - GitHub](https://github.com/textualize/rich/blob/master/README.cn.md)，主要用来看效果
 
+## 附录
+
+### Ubuntu
+
+#### 安装 python3
+
+确定本机有没有安装 python3.11 ：
+
+```shell
+which python3.11
+which python3
+```
+
+没有的话，安装之前搜索一下看看有没有 3.11：
+
+```shell
+apt search python3 | grep ^python3.11
+```
+
+有就直接安装好了。  
+没有的话可以通过 PPA 来安装 Python（安装之后应该是 `/usr/bin/python3.11`）：
+
+```shell
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.11
+```
+
+然后在当前用户 Home 目录的 `.bashrc` 里设置别名：
+
+- 如果原本就有 `python3` 那么尽量避免覆盖，因为 Ubuntu 很多库都依赖 python
+
+```sh
+alias py3='python3.11'
+```
+
+- 否则可以设置比较常用的别名
+
+```shell
+alias python3='python3.11'
+```
+
+别忘了
+
+```shell
+source ~/.bashrc
+```
+
+#### 安装 pip3
+
+确定本机有没有安装 pip3，有的话看一下版本是不是对应了 Python 3.11
+
+```shell
+which pip3
+pip3 -V
+```
+
+如果没有或者不是，需要另外安装 pip3 并在 `.bashrc` 里设置别名：
+（从这里往后都假设你设置的别名是 <font color="red"><b>python3</b></font> 和 <font color="red"><b>pip3</b></font> ）
+
+```shell
+wget https://bootstrap.pypa.io/pip/get-pip.py
+python3 ./get-pip.py
+```
+
+（由于我用的是WSL，不太需要虚拟环境，所以没有攻略）

@@ -8,8 +8,8 @@ T = TypeVar('T')
 
 class HydroConsole(Console):
 
-    def warning(self, *objects):
-        self.print(*objects, style='yellow')
+    def warning(self, *objects, **kwargs):
+        self.print(*objects, style='yellow', **kwargs)
 
     def ask(
             self,
