@@ -1,7 +1,7 @@
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
 """
-Usage: yudo.py [help|-h|--help]
+Usage: yudo.py help|-h|--help
        yudo.py [list|-l|--list]
        yudo.py [debug|-d|--debug] <command> <action>
        yudo.py [debug|-d|--debug] <command> [<option> ...]
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) < 2:
-        show_help()
+        list_commands()
 
     myself, exe, *argv = sys.argv
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
     elif exe in ('-l', '--list', 'list'):
         list_commands()
     elif exe in ('-d', '--debug', 'debug'):
-        exe, *argv = argv if argv else [None]
+        exe, *argv = argv or [None]
         execute(exe, *argv, debug=True)
     else:
         execute(exe, *argv, debug=False)
