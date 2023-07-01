@@ -306,4 +306,7 @@ def explorer():
 
 
 if __name__ == '__main__':
-    cli(sys.argv[1:])
+    if len(sys.argv) < 2:
+        cli(['list'])
+    else:
+        cli(sys.argv[1:])
