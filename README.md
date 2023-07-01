@@ -3,17 +3,22 @@
 <div align="center">
     <i>来自深界七层的潜影盒，有终末嗟叹之诗刻于其上，藏着银狼那奇技淫巧般的指令</i>
 </div>
-
-一套（省略八百字）命令集。
-
 ## 特性
 
-- 使用命令行接口定义与解析框架 [Click](https://click.palletsprojects.com/en/8.1.x/api/) ，面向对象设计命令行接口，妈妈再也不用担心我秃头
+- 使用命令行接口定义与解析框架 [Click](https://click.palletsprojects.com/en/8.1.x/api/) ，面向对象设计命令，妈妈再也不用担心我秃头
 - 使用花里胡哨但非常好看的命令行富文本打印工具 [Rich](https://github.com/Textualize/rich) ，就一个字：巴适
 - 从接口到配置全程使用 Python，一套功夫打包带走
 - Python 最新版！兼容性？那啥玩意儿
 - 本地的命令集，适合联动自己写的加密工具或者编码工具，或者直接基于此开发，肥肠氨醛
 - 蒸馍？泥不扶？不扶就[撸](#定制)！
+
+## 项目描述
+
+这是一套使用 Python 开发的本地命令行指令集合，旨在在本地任何地方都能调用自己<font color="deeppink">定制</font>的指令。
+
+它使用 [Click](https://click.palletsprojects.com/en/8.1.x/api/) 编写指令、使用 [Rich](https://github.com/Textualize/rich) 美化打印，均以面向对象的方式进行开发，可以通过相同的方式来[定制](#定制)你的本地命令行指令，同时，它并不局限于本地，你随时可以使用带有网络通信功能的 Python 包来实现网络交互。
+
+部分指令会以导入 Python 包的方式读取[配置](#配置)，这种方式可以省去很多解析和封装，降低定制成本和使用门槛。调用这些指令前，必须先进行配置。同样地，可以使用相同的方式来存放<font color="orange">专属于你的</font>配置。
 
 ## 安装
 
