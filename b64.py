@@ -77,6 +77,4 @@ converter.add_command(encoder, 'enc')
 converter.add_command(decoder, 'dec')
 
 if __name__ == '__main__':
-    import sys
-
-    converter(sys.argv[1:])
+    converter()

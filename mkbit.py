@@ -59,6 +59,4 @@ def generator(
 
 
 if __name__ == '__main__':
-    import sys
-
-    generator(sys.argv[1:])
+    generator()

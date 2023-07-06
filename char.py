@@ -58,6 +58,4 @@ def measurer():
 
 
 if __name__ == '__main__':
-    import sys
-
-    character(sys.argv[1:])
+    character()

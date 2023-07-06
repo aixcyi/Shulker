@@ -56,6 +56,4 @@ def generator(length: int, names: tuple[str], once: bool, qty: int, **csn: bool)
 
 
 if __name__ == '__main__':
-    import sys
-
-    generator(sys.argv[1:])
+    generator()

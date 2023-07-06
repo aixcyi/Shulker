@@ -44,6 +44,4 @@ def converter():
 
 
 if __name__ == '__main__':
-    import sys
-
-    converter(sys.argv[1:])
+    converter()

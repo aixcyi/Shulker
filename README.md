@@ -310,7 +310,6 @@ charsets: type(typing)  # 意思就是说 charsets 是一个 Python 包
 ```python
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
-import sys
 import click
 
 @click.command(__name__, short_help='我的命令')
@@ -328,7 +327,7 @@ def invoker(yourname: str, upper: bool):
 
 
 if __name__ == '__main__':
-    invoker(sys.argv[1:])
+    invoker()  # click 会自动读取 sys.argv
 ```
 
 保存到名为 `meow.py` 的文件中之后调用（非Windows用户记得加一下执行权限）

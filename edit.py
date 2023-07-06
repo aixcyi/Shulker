@@ -50,6 +50,4 @@ def opener(filename):
 
 
 if __name__ == '__main__':
-    import sys
-
-    opener(sys.argv[1:])
+    opener()
