@@ -40,6 +40,12 @@ class FoxLoop(Shell):
     stdout = stdin
     stderr = HydroConsole(stderr=True)
 
+    def info(self, *args, **kwargs) -> NoReturn:
+        self.stderr.print(*args, **kwargs)
+
+    def warning(self, *args, **kwargs) -> NoReturn:
+        self.stderr.print(*args, **kwargs, style='yellow')
+
     def postload(self):
         self.commands |= {
             cmd.name: CommandInfo(
@@ -53,7 +59,16 @@ class FoxLoop(Shell):
         super().postload()
 
     def invoke(self, cmd: Callable, argv: tuple) -> NoReturn:
-        cmd(*argv, obj=self.cache, standalone_mode=False)
+        try:
+            cmd(*argv, obj=self, standalone_mode=False)
+        except self.ExitShell:
+            raise
+        except click.Abort:
+            pass
+        except click.ClickException as e:
+            self.output(e.format_message())
+        except:
+            self.stderr.print_exception()
 
     def do_cls(self, *argv: str, **kwargs) -> NoReturn:
         """清空屏幕上的内容"""

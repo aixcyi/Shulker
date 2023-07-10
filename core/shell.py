@@ -15,7 +15,7 @@ class CommandInfo(NamedTuple):
 class Shell:
     prompt: str = '(shell)> '
     intro: str = ''
-    cache: defaultdict[str, Any] = defaultdict(lambda: None)
+    contexts: defaultdict[str, Any] = defaultdict(lambda: None)
     commands: dict[str, CommandInfo] = {}
     exitcode: int | None = None
     stdin = None
