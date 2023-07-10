@@ -148,7 +148,7 @@ def mapper(encoding: str, hexs: bool):
     console.print(panel)
 
 
-@character.command('rep', short_help='重复生成输入的字符串')
+@character.command('repeat', short_help='重复生成输入的字符串')
 @click.argument('times', type=int)
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 def repeater(times):
@@ -176,6 +176,7 @@ def measurer():
 
 character.add_command(encoder, 'enc')
 character.add_command(decoder, 'dec')
+character.add_command(repeater, 'rep')
 
 if __name__ == '__main__':
     character()
