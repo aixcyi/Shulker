@@ -1,7 +1,7 @@
 """
 行政区划代码相关，包含数据集载入及数据的使用。
 
-数据集应该以 GB18030 编码，以如下JSON格式存放：
+数据集应该以如下JSON格式存放：
 
 >>> {
 >>>     "title": "xxx数据（src源 2023年）",
@@ -31,7 +31,6 @@ from fox import FoxLoop
 
 root = Path(__file__).absolute().parent.parent
 datapack = root / 'dataset' / 'codes'
-encoding = 'GB18030'
 
 
 def get_files(shell: FoxLoop, filename: str | None) -> tuple[str]:
@@ -119,12 +118,14 @@ def lister(shell: FoxLoop):
 @manager.command('load', short_help='载入数据集')
 @click.option('-d', '--datafile', metavar='STEM', help='仅载入某一份数据集。')
 @click.option('-r', '--skip-reload', is_flag=True, help='如果已经加载过，则不重新加载。')
+@click.option('-e', '--encoding', default='UTF-8', help='字符编码，默认是 UTF-8。')
 @click.option('-y', '--yes', is_flag=True, help='跳过询问，静默载入。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 @click.pass_obj
 def loader(shell: FoxLoop,
            datafile: str | None,
            skip_reload: bool,
+           encoding: str,
            yes: bool):
     shell.contexts.setdefault('ADC', {})
     if not datapack.is_dir():
