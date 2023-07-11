@@ -40,6 +40,9 @@ class FoxLoop(Shell):
     stdout = stdin
     stderr = HydroConsole(stderr=True)
 
+    def input(self, *args, **kwargs) -> str:
+        return self.stdin.ask(*args, **kwargs)
+
     def info(self, *args, **kwargs) -> NoReturn:
         self.stderr.print(*args, **kwargs)
 

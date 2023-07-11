@@ -116,40 +116,53 @@ def lister(shell: FoxLoop):
     shell.output(table)
 
 
-@manager.command('load', short_help='载入某一份数据集')
-@click.argument('filename')
+@manager.command('load', short_help='载入数据集')
+@click.option('-d', '--datafile', metavar='STEM', help='仅载入某一份数据集。')
+@click.option('-r', '--skip-reload', is_flag=True, help='如果已经加载过，则不重新加载。')
+@click.option('-y', '--yes', is_flag=True, help='跳过询问，静默载入。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 @click.pass_obj
-def loader(shell: FoxLoop, filename: str):
+def loader(shell: FoxLoop,
+           datafile: str | None,
+           skip_reload: bool,
+           yes: bool):
     shell.contexts.setdefault('ADC', {})
     if not datapack.is_dir():
         shell.warning(f'数据目录不存在：{datapack!s}')
         return
 
-    is_reload = filename in shell.contexts['ADC']
+    for fp in datapack.glob('*.json'):
 
-    filename += '.json'
-    try:
-        target = next(datapack.glob(filename))
-    except StopIteration:
-        shell.warning(f'文件 {filename} 不存在。')
-        return
+        # 如果只加载单个文件
+        if datafile and fp.stem != datafile:
+            continue
 
-    with shell.stderr.status('正在载入...', spinner='bouncingBar'):
-        try:
-            data = json.load(target.open('r', encoding=encoding))
-        except Exception as e:
-            shell.stderr.print_exception(e)
+        # 如果禁止重新加载
+        is_reload = fp.stem in shell.contexts['ADC']
+        if skip_reload and is_reload:
+            continue
+
+        # 加载前需要确认
+        if not yes and shell.input(rf'是否加载{fp.name}？y/[N] ') != 'y':
+            continue
+
+        with shell.stderr.status(f'正在载入 {fp}', spinner='bouncingBar'):
+            try:
+                data = json.load(fp.open('r', encoding=encoding))
+            except Exception as e:
+                shell.stderr.print_exception(e)
+
+        # 验证文件格式
         if type(data) is not dict:
-            shell.warning(f'文件格式错误。{filename} 应当是一个JSON对象。')
-            return
+            shell.warning(f'文件格式错误。{datafile} 应当是一个JSON对象。')
+            continue
         surplus = {'title', 'year', 'data'} - set(data.keys())
         if surplus:
-            shell.warning(f'{filename} 还应当包含以下字段：', '、'.join(surplus))
-            return
+            shell.warning(f'{datafile} 还应当包含以下字段：', '、'.join(surplus))
+            continue
 
-        shell.contexts['ADC'][target.stem] = data
-        shell.info(f'已重新载入 {filename}' if is_reload else f'{filename} 载入完毕。')
+        shell.contexts['ADC'][fp.stem] = data
+        shell.info(('已重新载入' if is_reload else '已载入') + str(fp))
 
 
 @manager.command('search', short_help='搜索编码或地名')
