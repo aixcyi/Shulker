@@ -1,11 +1,13 @@
 import json
 import re
 from pathlib import Path
+from typing import Pattern
 
 import click
 from rich import box
 from rich.table import Table
 
+from core.param_types import Regex
 from fox import FoxLoop
 
 root = Path(__file__).absolute().parent.parent
@@ -81,12 +83,21 @@ def loader(shell: FoxLoop, filename: str):
 
 
 @manager.command('search', short_help='搜索编码或地名')
-@click.argument('text')
-@click.option('-r', '--regex', is_flag=True, help='启用正则表达式。')
-@click.option('-n', '--filename', help='将搜索限定在某一份数据集中。')
+@click.option('-c', '--code', multiple=True, help='搜索区划代码。')
+@click.option('-C', '--code-reg', multiple=True, type=Regex(), help='使用正则表达式搜索区划代码。')
+@click.option('-n', '--name', multiple=True, help='搜索区划名称。')
+@click.option('-N', '--name-reg', multiple=True, type=Regex(), help='使用正则表达式搜索区划名称。')
+@click.option('-A/-a', '--all/--any', 'op', default=False, help='串联还是并联所有条件。默认是 -a 并联。')
+@click.option('-f', '--filename', help='将搜索限定在某一份数据集中。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 @click.pass_obj
-def searcher(shell: FoxLoop, text: str, regex: bool, filename: str | None):
+def searcher(shell: FoxLoop,
+             code: tuple[str],
+             name: tuple[str],
+             code_reg: tuple[Pattern[str]],
+             name_reg: tuple[Pattern[str]],
+             filename: str | None,
+             op: bool):
     """
     当 FILENAME 是纯ASCII时搜索编码，否则搜索地名。
     """
@@ -95,15 +106,9 @@ def searcher(shell: FoxLoop, text: str, regex: bool, filename: str | None):
     if not datapack.is_dir():
         shell.warning(f'数据目录不存在：{datapack!s}')
         return
-
-    just_name = any(ord(c) > 128 for c in text)
-
-    if regex:
-        try:
-            text = re.compile(text)
-        except ValueError:
-            shell.warning('正则表达式不正确。')
-            return
+    if not any([code, code_reg, name, name_reg]):
+        shell.warning(f'没有搜索条件。')
+        return
 
     if filename is None:
         files = tuple(shell.contexts['ADC'].keys())
@@ -113,17 +118,19 @@ def searcher(shell: FoxLoop, text: str, regex: bool, filename: str | None):
     else:
         files = (filename,)
         if filename not in shell.contexts['ADC']:
-            shell.warning(f'{filename}.json 未载入。')
+            shell.warning(f'{filename}.json 未载入或不存在。')
             return
 
-    for f in files:
-        for k, v in shell.contexts['ADC'][f]['data'].items():
-            if just_name:
-                # 只搜索地名
-                result = re.match(text, v) if regex else (text in v)
-            else:
-                # 只搜索编码
-                result = re.match(text, k) if regex else (text in k)
+    ope = all if op else any
 
-            if result:
-                shell.output(f'{f}.json | {k}\t{v}')
+    with shell.stdout.status('正在搜索...', spinner='bouncingBar'):
+        for f in files:
+            for k, v in shell.contexts['ADC'][f]['data'].items():
+                hits = [
+                    *[c in k for c in code],
+                    *[n in v for n in name],
+                    *[re.match(rc, k) for rc in code_reg],
+                    *[re.match(rn, v) for rn in name_reg],
+                ]
+                if ope(hits):
+                    shell.output(f'{f}.json | {k}\t{v}')
