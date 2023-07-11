@@ -100,7 +100,7 @@ def searcher(shell: FoxLoop,
     当 FILENAME 是纯ASCII时搜索编码，否则搜索地名。
     """
     shell.contexts.setdefault('ADC', {})
-    if not any([code, code_reg, name, name_reg]):
+    if not any([*code, *code_reg, *name, *name_reg]):
         shell.warning(f'没有搜索条件。')
         return
 
