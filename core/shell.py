@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Any, Callable, NamedTuple, NoReturn
 
 from rich.console import Console
@@ -13,10 +12,10 @@ class CommandInfo(NamedTuple):
 
 
 class Shell:
-    prompt: str = '(shell)> '
     intro: str = ''
-    contexts: defaultdict[str, Any] = defaultdict(lambda: None)
+    prompt: str = '(shell)> '
     commands: dict[str, CommandInfo] = {}
+    contexts: dict[str, Any] = {}
     exitcode: int | None = None
     stdin = None
     stdout = None

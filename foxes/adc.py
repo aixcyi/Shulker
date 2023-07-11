@@ -27,8 +27,7 @@ def manager():
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 @click.pass_obj
 def lister(shell: FoxLoop):
-    if type(shell.contexts['ADC']) is not dict:
-        shell.contexts['ADC'] = {}
+    shell.contexts.setdefault('ADC', {})
     if not datapack.is_dir():
         shell.warning(f'数据目录不存在：{datapack!s}')
         return
@@ -58,8 +57,7 @@ def lister(shell: FoxLoop):
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 @click.pass_obj
 def loader(shell: FoxLoop, filename: str):
-    if type(shell.contexts['ADC']) is not dict:
-        shell.contexts['ADC'] = {}
+    shell.contexts.setdefault('ADC', {})
     if not datapack.is_dir():
         shell.warning(f'数据目录不存在：{datapack!s}')
         return
@@ -101,11 +99,7 @@ def searcher(shell: FoxLoop,
     """
     当 FILENAME 是纯ASCII时搜索编码，否则搜索地名。
     """
-    if type(shell.contexts['ADC']) is not dict:
-        shell.contexts['ADC'] = {}
-    if not datapack.is_dir():
-        shell.warning(f'数据目录不存在：{datapack!s}')
-        return
+    shell.contexts.setdefault('ADC', {})
     if not any([code, code_reg, name, name_reg]):
         shell.warning(f'没有搜索条件。')
         return
