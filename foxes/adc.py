@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import json
 import re
 from pathlib import Path
-from typing import Pattern
+from typing import NamedTuple, Pattern
 
 import click
 from rich import box
 from rich.table import Table
+from rich.text import Text
+from rich.tree import Tree
 
 from core.param_types import Regex
 from fox import FoxLoop
@@ -13,6 +17,51 @@ from fox import FoxLoop
 root = Path(__file__).absolute().parent.parent
 datapack = root / 'dataset' / 'codes'
 encoding = 'GB18030'
+
+
+def get_files(shell: FoxLoop, filename: str | None) -> tuple[str]:
+    """
+    根据文件名选择数据集文件。
+
+    应确保 ``shell.contexts['ADC']`` 的值一定是 ``dict`` 。
+
+    :param shell: Shell命令行，用于输出错误提示。
+    :param filename: 文件名。
+    :return: 所有已载入的文件名。
+    :raise RuntimeError:
+    """
+    if filename is None:
+        if shell.contexts['ADC']:
+            return tuple(shell.contexts['ADC'].keys())
+        shell.warning('未载入任何数据。')
+        raise
+    else:
+        if filename in shell.contexts['ADC']:
+            return (filename,)
+        shell.warning(f'{filename}.json 未载入或不存在。')
+        raise
+
+
+class DivisionCode(NamedTuple):
+    """
+    统计用行政区划代码。
+    """
+    province: str
+    prefecture: str = '00'
+    county: str = '00'
+    township: str = '000'
+    village: str = '000'
+
+    def __str__(self):
+        return ''.join(self)
+
+    @classmethod
+    def fromcode(cls, code: str) -> DivisionCode:
+        adc = code.ljust(12, '0')
+        return cls(adc[:2], adc[2:4], adc[4:6], adc[6:9], adc[9:12])
+
+    def code(self, level: int) -> str:
+        return ''.join(self[:level]).ljust(12, '0')
 
 
 @click.group(__name__, short_help='行政区划代码相关')
@@ -103,17 +152,10 @@ def searcher(shell: FoxLoop,
     if not any([*code, *code_reg, *name, *name_reg]):
         shell.warning(f'没有搜索条件。')
         return
-
-    if filename is None:
-        files = tuple(shell.contexts['ADC'].keys())
-        if not files:
-            shell.warning('未载入任何数据。')
-            return
-    else:
-        files = (filename,)
-        if filename not in shell.contexts['ADC']:
-            shell.warning(f'{filename}.json 未载入或不存在。')
-            return
+    try:
+        files = get_files(shell, filename)
+    except RuntimeError:
+        return
 
     ope = all if op else any
 
@@ -128,3 +170,59 @@ def searcher(shell: FoxLoop,
                 ]
                 if ope(hits):
                     shell.output(f'{f}.json | {k}\t{v}')
+
+
+@manager.command('parse', short_help='解析一个代码')
+@click.argument('code')
+@click.option('-f', '--filename', help='将搜索限定在某一份数据集中。')
+@click.pass_obj
+def parser(shell: FoxLoop, code: str, filename: str | None):
+    """
+    解析一个行政区划代码，并列出每一个层级的信息。
+    """
+    shell.contexts.setdefault('ADC', {})
+    if not code.isdigit():
+        shell.warning('代码只应包含纯数字。')
+        return
+    try:
+        files = get_files(shell, filename)
+    except RuntimeError:
+        return
+
+    adc = DivisionCode.fromcode(code)
+    tree = Tree('│')
+    parts = [
+        (c := adc.code(1), c[:0], adc[0], c[2:]),
+        (c := adc.code(2), c[:2], adc[1], c[4:]),
+        (c := adc.code(3), c[:4], adc[2], c[6:]),
+        (c := adc.code(4), c[:6], adc[3], c[9:]),
+        (c := adc.code(5), c[:9], adc[4], c[12:]),
+    ]
+    items = [
+        (
+            area,
+            Text().join([
+                Text(head, 'dim'),
+                Text(mid, 'magenta3'),
+                Text(tail, 'dim'),
+            ]),
+        )
+        for area, head, mid, tail in parts
+    ]
+    for area, title in items:
+        third = tree.add(title)
+
+        for i in range(len(files) - 1):
+            file = files[i]
+            name = shell.contexts['ADC'][file]['data'].get(area, '')
+            path = f'（{file}.json）'
+            line = Text().join([Text(name), Text(path, 'dim')])
+            third.add(line)
+        else:
+            file = files[-1]  # 从上文保证 files 有至少一个元素
+            name = shell.contexts['ADC'][file]['data'].get(area, '')
+            path = f'（{file}.json）\n'
+            line = Text().join([Text(name), Text(path, 'dim')])
+            third.add(line)
+
+    shell.output(tree)
