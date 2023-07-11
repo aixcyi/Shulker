@@ -1,3 +1,18 @@
+"""
+行政区划代码相关，包含数据集载入及数据的使用。
+
+数据集应该以 GB18030 编码，以如下JSON格式存放：
+
+>>> {
+>>>     "title": "xxx数据（src源 2023年）",
+>>>     "year": 2023,
+>>>     "data": {
+>>>         "code1": "area_name",
+>>>         "code2": "area_name",
+>>>         "code3": "area_name",
+>>>     }
+>>> }
+"""
 from __future__ import annotations
 
 import json
@@ -125,6 +140,14 @@ def loader(shell: FoxLoop, filename: str):
             data = json.load(target.open('r', encoding=encoding))
         except Exception as e:
             shell.stderr.print_exception(e)
+        if type(data) is not dict:
+            shell.warning(f'文件格式错误。{filename} 应当是一个JSON对象。')
+            return
+        surplus = {'title', 'year', 'data'} - set(data.keys())
+        if surplus:
+            shell.warning(f'{filename} 还应当包含以下字段：', '、'.join(surplus))
+            return
+
         shell.contexts['ADC'][target.stem] = data
         shell.info(f'已重新载入 {filename}' if is_reload else f'{filename} 载入完毕。')
 
