@@ -1,5 +1,7 @@
 #!./venv/Scripts/python.exe
 # -*- coding: UTF-8 -*-
+import base64 as b64
+
 import click
 from rich import box
 from rich.panel import Panel
@@ -39,46 +41,99 @@ def shower():
     console.print(table)
 
 
-@character.command('encode', short_help='将字符串转换为HEX')
+@character.command('encode', short_help='将字符串转换为其它形式')
+@click.option('-x', '--lower-hex', is_flag=True, help='转换为纯小写的HEX。')
+@click.option('-X', '--upper-hex', is_flag=True, help='转换为纯大写的HEX。')
+@click.option('-b', '--base', type=int, help='转换为 base64／base32／base85。')
+@click.option('--b64-safe', is_flag=True, help='转换为 base64，并使用 -_ 代替 +/ 符号。')
+@click.option('--b32-hex', is_flag=True, help='转换为 base32，并使用 HEX Base32 码表。详见参考信息。')
 @click.option('-e', '--encoding', default='UTF-8', help='字符串编码，默认是 UTF-8。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
-def encoder(encoding):
+def encoder(lower_hex: bool,
+            upper_hex: bool,
+            base: int | None,
+            b64_safe: bool,
+            b32_hex: bool,
+            encoding: str):
     """
-    将字符串按照指定编码转换为HEX。
+    将字符串按照指定编码转换为其它形式。
     """
     console = HydroConsole(stderr=True)
     try:
-        string = console.ask('输入任意字符串：', style='cyan')
+        string: str = console.ask('输入任意字符串：', style='cyan')
     except KeyboardInterrupt:
         exit(0)
     try:
         binary = string.encode(encoding)
     except LookupError:
         console.warning('无法识别的编码', encoding)
+        exit(-1)
     except:
         console.print_exception()
         exit(-1)
-    else:
+    if lower_hex:
         print(binary.hex())
+    elif upper_hex:
+        print(binary.hex().upper())
+    elif base == 64:
+        print(b64.b64encode(binary).decode('ASCII'))
+    elif base == 32:
+        print(b64.b32encode(binary).decode('ASCII'))
+    elif base == 85:
+        print(b64.b85encode(binary).decode('ASCII'))
+    elif base:
+        console.warning(f'不支持转换为 Base{base}')
+    elif b64_safe:
+        print(b64.urlsafe_b64encode(binary).decode('ASCII'))
+    elif b32_hex:
+        print(b64.b32hexencode(binary).decode('ASCII'))
+    else:
+        print(string)
 
 
-@character.command('decode', short_help='将HEX转换为字符串')
+@character.command('decode', short_help='从某种形式还原字符串')
+@click.option('-x', '--lower-hex', is_flag=True, help='转换为纯小写的HEX。')
+@click.option('-X', '--upper-hex', is_flag=True, help='转换为纯大写的HEX。')
+@click.option('-b', '--base', type=int, help='转换为 base64／base32／base85。')
+@click.option('--b64-safe', is_flag=True, help='转换为 base64，并使用 -_ 代替 +/ 符号。')
+@click.option('--b32-hex', is_flag=True, help='转换为 base32，并使用 HEX Base32 码表。详见参考信息。')
 @click.option('-e', '--encoding', default='UTF-8', help='字符串编码，默认是 UTF-8。')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
-def decoder(encoding):
+def decoder(lower_hex: bool,
+            upper_hex: bool,
+            base: int | None,
+            b64_safe: bool,
+            b32_hex: bool,
+            encoding: str):
     """
-    按照指定编码将HEX转换为字符串。
+    按照指定编码从某种形式还原字符串。
     """
     console = HydroConsole(stderr=True)
     try:
-        raw = console.ask('输入HEX：', style='cyan')
-        print()
+        raw = console.ask('输入：', style='cyan')
     except KeyboardInterrupt:
         exit(0)
     try:
-        data = bytes.fromhex(raw)
-    except ValueError:
-        console.warning('HEX格式错误。')
+        if lower_hex or upper_hex:
+            data = bytes.fromhex(raw)
+        elif base == 64:
+            data = b64.b64decode(raw)
+        elif base == 85:
+            data = b64.b85decode(raw)
+        elif base == 32:
+            data = b64.b32decode(raw)
+        elif base:
+            console.warning(f'不支持从 Base{base} 还原字符串')
+            exit(-1)
+        elif b64_safe:
+            data = b64.urlsafe_b64decode(raw)
+        elif b32_hex:
+            data = b64.b32hexdecode(raw)
+        else:
+            console.warning('未指定格式。')
+            exit(-1)
+    except:
+        console.warning('格式错误。')
         exit(-1)
     try:
         string = data.decode(encoding)
