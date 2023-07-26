@@ -1,7 +1,7 @@
 <h1 align="center" style="padding-top: 32px">Shulker&nbsp;<sup><sup>3.11</sup></sup></h1>
 
 <div align="center">
-    &gt;&nbsp;<i>来自深界七层的潜影盒，有终末嗟叹之诗刻于其上，藏着银狼那奇技淫巧般的指令</i>
+    <i>来自深界七层的潜影盒，有终末嗟叹之诗刻于其上，藏着银狼那奇技淫巧般的指令</i>
 </div>
 
 ## 特性
