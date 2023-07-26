@@ -18,8 +18,7 @@ def character():
 
     HEX是一种基于16个可打印字符的二进制数据表示方法，每个字节使用两个十六进制的字符表示。
 
-    标准编码：
-    https://docs.python.org/zh-cn/3/library/codecs.html#standard-encodings
+    使用 shulker ref 获取相关参考信息。
     """
 
 

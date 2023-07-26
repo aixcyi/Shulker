@@ -278,29 +278,40 @@ def fixer():
                   Text(err2 or '修改成功', 'red' if err2 else 'green'))
 
 
-@cli.command('status', short_help='列出环境信息')
+@cli.command('ref', short_help='列出参考信息')
 @click.help_option('-h', '--help', help='显示此帮助信息。')
 def explorer():
     console = HydroConsole()
 
-    table = Table(Column(justify='right'), Column(), box=None, show_header=False)
-    table.add_row('项目目录', str(root))
-    table.add_row('解释器', str(sys.executable))
-    table.add_row('解释器版本', sys.version)
+    # noinspection SpellCheckingInspection
+    references = [
+        ('项目目录', str(root)),
+        ('解释器', str(sys.executable)),
+        ('解释器版本', sys.version),
+        (),
+        ('Python 字符编码', 'https://docs.python.org/zh-cn/3/library/codecs.html#standard-encodings'),
+        ('RFC 4648', 'https://datatracker.ietf.org/doc/html/rfc4648.html'),
+        ('Base64 码表', 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789+/'),
+        ('Safe Base64 码表', 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789-_'),
+        ('Base32 码表', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'),
+        ('HEX Base32 码表', '0123456789ABCDEFGHIJKLMNOPQRSTUV'),
+    ]
 
     try:
-        from configs import STATUSES
+        from configs import REFERENCES
     except ImportError:
         # noinspection PyPep8Naming
-        STATUSES = []
+        REFERENCES = []
 
-    for status in STATUSES:
-        if not isinstance(status, tuple | list):
+    table = Table(Column(justify='right'), Column(overflow='fold'), box=None, show_header=False)
+
+    for reference in references + REFERENCES:
+        if not isinstance(reference, tuple | list):
             continue
-        if not status:
+        if not reference:
             table.add_row(end_section=True)
         else:
-            table.add_row(*status)
+            table.add_row(*reference)
 
     console.print(Panel(table, expand=False, border_style='dim'))
 

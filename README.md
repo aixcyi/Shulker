@@ -238,27 +238,27 @@ yudo abc.d runserver 0.0.0.0:80  # python -X utf8 ./manage.py runserver 0.0.0.0:
 yudo abc.d --help  # python -X utf8 ./manage.py --help
 ```
 
-### STATUSES
+### REFERENCES
 
-环境信息。被命令 `shulker status` 用来列出相关环境信息，但其实……你完全可以把它当成一个备忘录。
+参考信息。被命令 `shulker ref` 用来列出一些用于参考的信息，但其实……你完全可以把它当成一个备忘录。
 
 ##### 烹饪指南
 
 ```python
 # 不要问我为什么不定义成一个dict，谁也不知道以后会不会有更多列
-STATUSES = [
+REFERENCES = [
     (),  #  空一行
-    ('标准编码', 'https://docs.python.org/zh-cn/3/library/codecs.html#standard-encodings'),
+    ('Python 语法清单', 'https://cheatsheets.zip/python'),
 ]
 ```
 
 ##### 食用指南
 
 ```python
-from configs import STATUSES
+from configs import REFERENCES
 from rich.console import ConsoleRenderable, RichCast
 
-STATUSES: list[tuple | tuple[str, None | ConsoleRenderable | RichCast | str]]
+REFERENCES: list[tuple | tuple[str, None | ConsoleRenderable | RichCast | str]]
 ```
 
 ### charsets
