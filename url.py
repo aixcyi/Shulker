@@ -68,27 +68,27 @@ def splitter(encoding, only_path, only_query, skip_fragment):
         port = Text(('%d (默认)' % port) if port else '(默认)', 'bright_magenta')
 
     # 主表
-    t_main = Table('组件', Column('值', overflow='fold'), box=box.SIMPLE_HEAD)
-    t_main.add_row('协议', scheme)
-    t_main.add_row('主机地址', info.hostname)
-    t_main.add_row('端口号', port)
-    t_main.add_row('用户名', info.username)
-    t_main.add_row('密码', info.password)
-    t_main.add_row('路径', info.path)
-    t_main.add_row('fragment', info.fragment)
+    tb_main = Table('组件', Column('值', overflow='fold'), box=box.SIMPLE_HEAD)
+    tb_main.add_row('协议', scheme)
+    tb_main.add_row('主机地址', info.hostname)
+    tb_main.add_row('端口号', port)
+    tb_main.add_row('用户名', info.username)
+    tb_main.add_row('密码', info.password)
+    tb_main.add_row('路径', info.path)
+    tb_main.add_row('fragment', info.fragment)
 
     # Query参数表
-    t_query = Table(
+    tb_query = Table(
         '参数',
         Column('查询值', overflow='fold'),
         box=box.SIMPLE_HEAD,
         row_styles=["dim", ""],
     )
     for k, v in query.items():
-        t_query.add_row(k, v)
+        tb_query.add_row(k, v)
 
-    console.print(t_main)
-    console.print(t_query)
+    console.print(tb_main)
+    console.print(tb_query)
 
 
 @operator.command('encode', no_args_is_help=False, short_help='URL编码')
