@@ -24,7 +24,7 @@ def character():
     """
 
 
-@character.command('set', short_help='列出所有预设的字符集')
+@character.command('show', short_help='列出所有预设的字符集')
 @click.help_option('-h', '--help', help='列出这份帮助信息。')
 def shower():
     table = Table(
