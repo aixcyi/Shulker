@@ -45,10 +45,6 @@ interface = click.Command(__name__, short_help='运行预设的指令（程序�
 commands: dict[str, type[Command]] = {v.name: v for v in COMMANDS}
 
 
-def indexes1(iterable):
-    return range(1, len(iterable) + 1)
-
-
 def show_help():
     print(__doc__)
     exit(0)
@@ -84,8 +80,8 @@ def execute(name, *options, debug=False):
             box=None,
             padding=(0, 0, 0, 1),
         )
-        for idx, line in zip(indexes1(command.scripts), command.scripts):
-            table.add_row(str(idx), '│', line)
+        for index, line in enumerate(command.scripts, start=1):
+            table.add_row(str(index), '│', line)
         console.print(table)
         exit(0)
     try:
